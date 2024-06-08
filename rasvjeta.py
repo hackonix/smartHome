@@ -11,7 +11,7 @@ def zalazak_sunca():
 # Glavni prozor
 root = tk.Tk()
 root.title("Smart Home Sustav")
-root.geometry("500x500")
+root.geometry("600x500")
 
 # Funkcija za prikaz postavki rasvjete u okviru
 def postavke_rasvjeta():
