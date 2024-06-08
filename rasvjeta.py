@@ -45,7 +45,7 @@ def postavke_rasvjeta():
 
 # Gumb za otvaranje postavki rasvjete
 light_button = ttk.Button(root, text="Rasvjeta", command=postavke_rasvjeta)
-light_button.place(x=10, y=10, width=150, height=50)  # Povećanje gumba i postavljanje u gornji lijevi kut
+light_button.place(x=10, y=10, width=150, height=50)  
 
 root.mainloop()
 
