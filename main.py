@@ -1,10 +1,10 @@
-from Screens import FirstScreen
+from Screens import MainMenu
 import tkinter as tk
 
 
 def main():
     root = tk.Tk()
-    app = FirstScreen(root)
+    app = MainMenu(root)
 
     root.mainloop()
 
