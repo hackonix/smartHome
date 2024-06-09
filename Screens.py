@@ -56,3 +56,34 @@ class FirstScreen:
             width=BUTTON_WIDTH,
             anchor="center",
         )
+
+        # Upravljanje kamerom - button
+        self.button_upravljanje_kamerom = ttk.Button(self.root, text=KAMERA_PLACEHOLDER)
+        self.button_upravljanje_kamerom.place(
+            relx=0.5,
+            rely=(FIRST_REL_Y_PLACEMENT + 0.075 * 2),
+            width=BUTTON_WIDTH,
+            anchor="center",
+        )
+
+        # Upravljanje dodatnim metrikama - button
+        self.button_upravljanje_dodatnim_metrikama = ttk.Button(
+            self.root, text=DODATNE_METRIKE_PLACEHOLDER
+        )
+        self.button_upravljanje_dodatnim_metrikama.place(
+            relx=0.5,
+            rely=(FIRST_REL_Y_PLACEMENT + 0.075 * 3),
+            width=BUTTON_WIDTH,
+            anchor="center",
+        )
+
+        # Upravljanje lokacijom - button
+        self.button_upravljanje_lokacijom = ttk.Button(
+            self.root, text=LOKACIJA_PLACEHOLDER
+        )
+        self.button_upravljanje_lokacijom.place(
+            relx=0.5,
+            rely=(FIRST_REL_Y_PLACEMENT + 0.075 * 4),
+            width=BUTTON_WIDTH,
+            anchor="center",
+        )
