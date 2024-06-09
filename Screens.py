@@ -19,6 +19,8 @@ VLAZNOST_PLACEHOLDER = "VLAZNOST"
 TLAK_PLACEHOLDER = "TLAK"
 LOKACIJA_PLACEHOLDER = "LOKACIJA"
 
+ZELJENI_EVENT = "<Button-1>"
+
 
 class MainMenu:
     def __init__(self, root: tk.Tk, screen_size: str = "800x300") -> None:
@@ -126,7 +128,11 @@ class MainMenu:
         # CONFIGURE EVENTS
         # -----------------------------
         self.button_upravljanje_rasvjetom.bind(
-            "<Button-1>", self.button_rasvjeta_on_click
+            ZELJENI_EVENT, self.button_rasvjeta_on_click
+        )
+
+        self.button_upravljanje_temperaturom.bind(
+            ZELJENI_EVENT, self.button_temp_on_click
         )
 
     # -----------------------------
@@ -154,18 +160,15 @@ class MainMenu:
             self.label_vanjska_temp.configure(text=f"Greska: {e}")
         self.root.after(5000, self.update_out_temp)
 
-    # OCISTI WIDGETE KOD PROMJENE SCREENA
-    def clear_screen(self):
-        for widget in self.root.winfo_children():
-            widget.destroy
-
     # -----------------------------
     # PROMIJENI SCREEN
     # -----------------------------
 
     def button_rasvjeta_on_click(self, event):
-        self.clear_screen()
         RasvjetaScreen(self.root)
+
+    def button_temp_on_click(self, event):
+        TemperaturaScreen(self.root)
 
 
 class RasvjetaScreen(MainMenu):
@@ -196,7 +199,9 @@ class RasvjetaScreen(MainMenu):
         hour_entry.pack(pady=5)
 
         save_button = ttk.Button(
-            self.rasvjeta_postavke, text="Spremi", command=self.spremanje_postavki
+            self.rasvjeta_postavke,
+            text="Spremi",
+            command=self.spremanje_postavki_rasvjete,
         )
         save_button.pack(pady=20)
 
@@ -204,7 +209,7 @@ class RasvjetaScreen(MainMenu):
         # FUNKCIJE SECOND SCREEN
         # -----------------------------
 
-    def spremanje_postavki(self):
+    def spremanje_postavki_rasvjete(self):
         if self.sunset_var.get():
             vrijeme_zalaska = self.zalazak_sunca()
             if vrijeme_zalaska:
@@ -225,7 +230,32 @@ class RasvjetaScreen(MainMenu):
         return response
 
 
-class TemperaturaMenu(MainMenu):
+class TemperaturaScreen(MainMenu):
     def __init__(self, root: tk.Tk, screen_size: str = "800x300") -> None:
         super().__init__(root, screen_size)
-        pass
+        self.root = root
+        self.title = "Temperatura - Postavke"
+
+        self.temperatura_postavke = tk.Frame(self.root, borderwidth=2, relief="groove")
+
+        self.temperatura_postavke.place(x=200, y=50, width=300, height=200)
+
+        # Oznaka i unos temperature
+        tk.Label(self.temperatura_postavke, text="Zeljena temperatura: ").pack(pady=10)
+
+        self.zeljena_temperatura = tk.StringVar()
+        self.zeljena_temperatura_entry = ttk.Entry(
+            self.temperatura_postavke, textvariable=self.zeljena_temperatura
+        )
+        self.zeljena_temperatura_entry.pack(pady=5)
+
+        save_button = ttk.Button(
+            self.temperatura_postavke,
+            text="Spremi",
+            command=self.spremanje_postavki_temperature,
+        )
+        save_button.pack(pady=20)
+
+    def spremanje_postavki_temperature(self):
+        self.zeljena_temperatura = self.zeljena_temperatura.get()
+        self.temperatura_postavke.destroy()
