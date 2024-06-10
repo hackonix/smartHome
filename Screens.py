@@ -312,11 +312,9 @@ class KameraScreen(MainMenu):
 
     def spremanje_postavki_kamere(self):
         if self.kamera_var.get():
-            self.kamera_ON = True
+            self.kamera_hourd = "00:00 - 23:59"
             self.kamera_postavke.destroy()
-            return "00:00 - 23:59"
 
         else:
             self.kamera_hour = self.kamera_hour.get()
             self.kamera_postavke.destroy()
-            return self.kamera_hour
