@@ -128,11 +128,18 @@ class MainMenu:
         # CONFIGURE EVENTS
         # -----------------------------
         self.button_upravljanje_rasvjetom.bind(
-            ZELJENI_EVENT, self.button_rasvjeta_on_click
+            ZELJENI_EVENT,
+            self.button_rasvjeta_on_click,
         )
 
         self.button_upravljanje_temperaturom.bind(
-            ZELJENI_EVENT, self.button_temp_on_click
+            ZELJENI_EVENT,
+            self.button_temp_on_click,
+        )
+
+        self.button_upravljanje_kamerom.bind(
+            ZELJENI_EVENT,
+            self.button_kamera_on_click,
         )
 
     # -----------------------------
@@ -169,6 +176,9 @@ class MainMenu:
 
     def button_temp_on_click(self, event):
         TemperaturaScreen(self.root)
+
+    def button_kamera_on_click(self, event):
+        KameraScreen(self.root)
 
 
 class RasvjetaScreen(MainMenu):
@@ -259,3 +269,54 @@ class TemperaturaScreen(MainMenu):
     def spremanje_postavki_temperature(self):
         self.zeljena_temperatura = self.zeljena_temperatura.get()
         self.temperatura_postavke.destroy()
+
+
+class KameraScreen(MainMenu):
+    def __init__(self, root: tk.Tk, screen_size: str = "800x300") -> None:
+        super().__init__(root, screen_size)
+
+        self.root = root
+        self.title = "Kamera - Postavke"
+
+        self.kamera_postavke = tk.Frame(self.root, borderwidth=2, relief="groove")
+
+        self.kamera_postavke.place(
+            x=200, y=50, width=300, height=200
+        )  # Postavljanje okvira unutar glavnog prozora
+
+        # Checkbox za automatsko paljenje po zalasku sunca
+        self.kamera_var = tk.BooleanVar()
+        tk.Checkbutton(
+            self.kamera_postavke,
+            text="Ukljuci/iskljuci kameru",
+            variable=self.kamera_var,
+        ).pack(pady=10)
+
+        # Oznaka i unos za sat kad će se svjetlo upaliti
+        tk.Label(
+            self.kamera_postavke, text="Upali/iskljuci kameru u (HH:MM) - (HH:MM):"
+        ).pack(pady=10)
+
+        self.kamera_hour = tk.StringVar()
+        self.kamera_hour_entry = ttk.Entry(
+            self.kamera_postavke, textvariable=self.kamera_hour
+        )
+        self.kamera_hour_entry.pack(pady=5)
+
+        self.kamera_save_button = ttk.Button(
+            self.kamera_postavke,
+            text="Spremi",
+            command=self.spremanje_postavki_kamere,
+        )
+        self.kamera_save_button.pack(pady=20)
+
+    def spremanje_postavki_kamere(self):
+        if self.kamera_var.get():
+            self.kamera_ON = True
+            self.kamera_postavke.destroy()
+            return "00:00 - 23:59"
+
+        else:
+            self.kamera_hour = self.kamera_hour.get()
+            self.kamera_postavke.destroy()
+            return self.kamera_hour
