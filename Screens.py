@@ -1,11 +1,12 @@
 import tkinter as tk
 import requests
+import cv2
 from tkinter import ttk
 from datetime import datetime
 from PIL import Image, ImageTk
-import cv2
+from sense_emu import SenseHat
 
-
+sense = SenseHat()
 # -----------------------------
 # KONSTANTE
 # -----------------------------
@@ -400,41 +401,36 @@ class GlavniPrikazScreen(
         self.root.rowconfigure(0, weight=1)
         self.root.columnconfigure(0, weight=1)
         # -----------------------------
-        # RASVJETA LABEL
-        # MIJENJA BOJU OVISNO O VREMENU
+        # RASVJETA LABEL TODO: DODAJ FUNKCIONALNOST
         # -----------------------------
-
-        # -----------------------------
-        # VIDEO FRAME LABEL
-        # -----------------------------
-
-        # TODO: If kamera_var ili trenutno vrijeme u kamera_hour range-u onda bi se ovo trebalo prikazivati, inace ne
-        # Implementirati funkcionalnost
-
-        self.video_label = tk.Label(self.root)
-        self.video_label.place(
-            relx=0.5,
-            rely=0.5,
-            anchor="center",
-            height=500,
-            width=500,
-        )
-
-        self.cap = cv2.VideoCapture(0)
+        self.rasvjeta_label = tk.Label(self.root, foreground="black")
+        self.rasvjeta_label.place(relx=0.5, rely=0.1, anchor="center")
 
         # -----------------------------
-        # FRAME - DATUM I VRIJEME LABELS
+        # VIDEO FRAME PLACEHOLDER
         # -----------------------------
 
-        self.glavni_prikaz_label_datum_vrijeme = tk.Label(
+        if Kamera.kamera_var == True or self.vrijeme_je_u_zadanom_opsegu(
+            Kamera.kamera_hour
+        ):
+            self.video_label = ttk.Label(self.root)
+            self.video_label.place(
+                relx=0.5,
+                rely=0.5,
+                anchor="center",
+                height=500,
+                width=500,
+            )
+            self.cap = cv2.VideoCapture(0)
+
+        # -----------------------------
+        # TRENUTNI DATUM I VRIJEME
+        # -----------------------------
+
+        self.glavni_prikaz_label_datum_vrijeme = ttk.Label(
             self.root,
             text="Ucitavanje...",
             font=FONT_STANDARD,
-            bd=1,
-            fg="white",
-            bg="black",
-            padx=5,
-            pady=5,
             justify="center",
         )
 
@@ -443,55 +439,59 @@ class GlavniPrikazScreen(
         )
 
         # -----------------------------
-        # FRAME - TEMPERATURA LABELS
+        # VANJSKA TEMPERATURA
         # -----------------------------
 
-        self.glavni_prikaz_label_temperatura = tk.Label(
+        self.glavni_prikaz_label_temperatura = ttk.Label(
             self.root,
             text="Ucitavanje...",
             font=FONT_STANDARD,
-            bd=1,
-            fg="white",
-            bg="black",
-            padx=5,
-            pady=5,
             justify="center",
         )
 
         self.glavni_prikaz_label_temperatura.place(relx=0.975, rely=0.025, anchor="ne")
 
         # -----------------------------
-        # UNUTARNJA TEMPERATURA
+        # UNUTARNJA TEMPERATURA TODO: DODAJ FUNKCIONALNOST
         # -----------------------------
+        self.unutarnja_temperatura_label = ttk.Label(
+            self.root,
+            text="Ucitavanje...",
+            font=FONT_STANDARD,
+            justify="center",
+        )
+
+        self.unutarnja_temperatura_label.place(relx=0.975, rely=0.075, anchor="ne")
 
         # -----------------------------
-        #  DODATNE METRIKE
+        #  DODATNE METRIKE TODO: DODAJ FUNKCIONALNOST
         # -----------------------------
 
-        if DodatneMetrike.vlaznost_var:
-            self.glavni_prikaz_label_vlaznost = tk.Label(
+        if DodatneMetrike.vlaznost_var == True:
+            self.glavni_prikaz_label_vlaznost = ttk.Label(
                 self.root,
                 text="Ucitavanje...",
                 font=FONT_STANDARD,
-                bd=1,
-                fg="white",
-                bg="black",
-                padx=5,
-                pady=5,
                 justify="center",
             )
 
             self.glavni_prikaz_label_vlaznost.place(relx=0.975, rely=0.45, anchor="e")
 
-        # -----------------------------
-        # DODATI ISTO KAO GORE, ALI ZA TLAK
-        # -----------------------------
+        if DodatneMetrike.tlak_var == True:
+            self.glavni_prikaz_label_tlak = ttk.Label(
+                self.root,
+                text="Ucitavanje...",
+                font=FONT_STANDARD,
+                justify="center",
+            )
+
+            self.glavni_prikaz_label_tlak.place(relx=0.975, rely=0.75, anchor="e")
 
         # ----------------------------
-        # VRATI SE U POSTAVKE
+        # VRATI SE U POSTAVKE - BUTTON
         # ----------------------------
-        self.back_to_main_screen_button = ttk.Button(self.root, text="Postavke")
-        self.back_to_main_screen_button.place(relx=0.025, rely=0.95, anchor="w")
+        self.vrati_se_u_postavke_button = ttk.Button(self.root, text="Postavke")
+        self.vrati_se_u_postavke_button.place(relx=0.025, rely=0.95, anchor="w")
 
         # --------------------------
         # UPDATE-AJ NOVE PODATKE
@@ -502,8 +502,16 @@ class GlavniPrikazScreen(
         self.root.after(1000, self.update_out_temp_glavniPrikaz)
 
         # --------------------------
-        # Dodaj refresh podataka iz raspberrya
+        # Update Raspberry data
         # --------------------------
+        self.root.after(1000, self.dohvati_unutarnju_temperaturu)
+        self.root.after(1000, self.dohvati_vlaznost)
+        self.root.after(1000, self.dohvati_tlak)
+
+        # --------------------------
+        # POVRATAK U MAIN SCREEN
+        # --------------------------
+        self.vrati_se_u_postavke_button.bind(ZELJENI_EVENT, self.postavke_on_click)
 
     # -----------------------------
     # FUNKCIJE
@@ -555,24 +563,49 @@ class GlavniPrikazScreen(
     # ------------------------------
     # SenseHat mjerenja
     # ------------------------------
-    # TODO: Import SenseHat i napraviti ova mjerenja
 
-    def izmjeri_vlaznost(self) -> str:
-        pass
+    def dohvati_vlaznost(self) -> str:
+        vlaznost = sense.get_humidity()
+        self.glavni_prikaz_label_vlaznost.config(text=f"Vlaznost iznosi: {vlaznost} %")
+        self.root.after(5000, self.dohvati_vlaznost)
 
-    def izmjeri_tlak(self) -> str:
-        pass
+    def dohvati_tlak(self) -> str:
+        tlak = sense.get_pressure()
+        self.glavni_prikaz_label_tlak.config(text=f"Tlak iznosi: {tlak} hPa")
+        self.root.after(5000, self.dohvati_tlak)
 
-    def izmjeri_unutarnju_temperaturu(self) -> str:
-        pass
+    def dohvati_unutarnju_temperaturu(self) -> str:
+        temperatura = sense.get_temperature()
+        self.unutarnja_temperatura_label.config(
+            text=f"Temperatura iznosi {temperatura:.2f} stupnjeva"
+        )
+        self.root.after(5000, self.dohvati_unutarnju_temperaturu)
 
     # -----------------------------
     # Funkcija koja provjerava dal je Kamera.kamera_var == True ili trenutno vrijeme spada u Kamera.kamera_hour
     # -----------------------------
+    def vrijeme_je_u_zadanom_opsegu(self, vremenski_opseg):
+        pocetno_vrijeme_str, zavrsno_vrijeme_str = vremenski_opseg.split(" - ")
+
+        pocetno_vrijeme = datetime.strptime(pocetno_vrijeme_str, "%H:%M").time()
+        zavrsno_vrijeme = datetime.strptime(zavrsno_vrijeme_str, "%H:%M").time()
+
+        trenutno_vrijeme = datetime.now().time()
+
+        if pocetno_vrijeme < zavrsno_vrijeme:
+            return pocetno_vrijeme <= trenutno_vrijeme <= zavrsno_vrijeme
+        else:
+            return (
+                trenutno_vrijeme >= pocetno_vrijeme
+                or trenutno_vrijeme <= zavrsno_vrijeme
+            )
 
     # -----------------------------
     # Funkcija koja nas ponovo vraca na MainMenuScreen
     # -----------------------------
+    def postavke_on_click(self, event):
+        self.root.destroy()
+        MainMenu(self.root)
 
     def __del__(self):
         self.cap.release()
