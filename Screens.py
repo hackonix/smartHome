@@ -1,4 +1,5 @@
 import tkinter as tk
+from typing import Optional
 import requests
 import cv2
 from tkinter import ttk
@@ -155,6 +156,8 @@ class MainMenu:
             self.button_glavni_prikaz_on_click,
         )
 
+        self.dodatne_metrike_screen: Optional[DodatneMetrikeScreen] = None
+
     # -----------------------------
     # FUNKCIJE ZA MAIN MENU
     # -----------------------------
@@ -197,13 +200,12 @@ class MainMenu:
         Kamera = KameraScreen(self.root)
 
     def button_dodatne_metrike_on_click(self, event):
-        global DodatneMetrike
-        DodatneMetrike = DodatneMetrikeScreen(self.root)
+        self.dodatne_metrike_screen = DodatneMetrikeScreen(self.root)
 
     def button_glavni_prikaz_on_click(self, event):
         self.root.destroy()
         global GlavniPrikaz
-        GlavniPrikaz = GlavniPrikazScreen(self.root)
+        GlavniPrikaz = GlavniPrikazScreen(self.root, self.dodatne_metrike_screen)
 
 
 class RasvjetaScreen(MainMenu):
@@ -392,11 +394,16 @@ class DodatneMetrikeScreen(MainMenu):
 class GlavniPrikazScreen(
     RasvjetaScreen, TemperaturaScreen, KameraScreen, DodatneMetrikeScreen, MainMenu
 ):
-    def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
+    def __init__(self, root: tk.Tk, dodatne_metrike_screen: DodatneMetrikeScreen, screen_size: str = "800x600") -> None:
 
         self.root = tk.Tk()
         self.title = "Glavni prikaz"
         self.root.geometry(screen_size)
+
+        # -----------------------------
+        # INICIJALIZACIJA SCREENOVA
+        # -----------------------------
+        self.dodatne_metrike_screen = dodatne_metrike_screen
 
         self.root.rowconfigure(0, weight=1)
         self.root.columnconfigure(0, weight=1)
@@ -467,7 +474,7 @@ class GlavniPrikazScreen(
         #  DODATNE METRIKE TODO: DODAJ FUNKCIONALNOST
         # -----------------------------
 
-        if DodatneMetrike.vlaznost_var == True:
+        if self.dodatne_metrike_screen.vlaznost_var == True:
             self.glavni_prikaz_label_vlaznost = ttk.Label(
                 self.root,
                 text="Ucitavanje...",
@@ -477,7 +484,7 @@ class GlavniPrikazScreen(
 
             self.glavni_prikaz_label_vlaznost.place(relx=0.975, rely=0.45, anchor="e")
 
-        if DodatneMetrike.tlak_var == True:
+        if self.dodatne_metrike_screen.tlak_var == True:
             self.glavni_prikaz_label_tlak = ttk.Label(
                 self.root,
                 text="Ucitavanje...",
