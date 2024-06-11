@@ -26,7 +26,7 @@ ZELJENI_EVENT = "<Button-1>"
 
 
 class MainMenu:
-    def __init__(self, root: tk.Tk, screen_size: str = "800x300") -> None:
+    def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
         self.root = root
         self.root.title = "SmartHome"
         self.root.geometry(screen_size)
@@ -124,8 +124,9 @@ class MainMenu:
         # -----------------------------
         # UPDATE-AJ PODATKE
         # -----------------------------
-        self.root.after(1000, self.update_time_mainMenu)
-        self.root.after(1000, self.update_out_temp_mainMenu)
+        if self.root.title == "SmartHome":
+            self.root.after(1000, self.update_time_mainMenu)
+            self.root.after(1000, self.update_out_temp_mainMenu)
 
         # -----------------------------
         # EVENT BINDING
@@ -201,13 +202,13 @@ class MainMenu:
         DodatneMetrike = DodatneMetrikeScreen(self.root)
 
     def button_glavni_prikaz_on_click(self, event):
-        self.root.destroy()
+        # self.root.destroy()
         global GlavniPrikaz
         GlavniPrikaz = GlavniPrikazScreen(self.root)
 
 
 class RasvjetaScreen(MainMenu):
-    def __init__(self, root: tk.Tk, screen_size: str = "800x300") -> None:
+    def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
         super().__init__(root, screen_size)
         self.root = root
 
@@ -221,18 +222,21 @@ class RasvjetaScreen(MainMenu):
 
         # Checkbox za automatsko paljenje po zalasku sunca
         self.sunset_var = tk.BooleanVar()
+
         tk.Checkbutton(
             self.rasvjeta_postavke,
-            text="Automatski upali po zalasku sunca",
+            text="Upali svjetlo",
             variable=self.sunset_var,
         ).pack(pady=10)
 
         # Oznaka i unos za sat kad će se svjetlo upaliti
-        tk.Label(self.rasvjeta_postavke, text="Upali svjetlo u (HH:MM):").pack(pady=10)
+        tk.Label(
+            self.rasvjeta_postavke, text="Upali/iskljuci svjetlo u (HH:MM) - (HH:MM):"
+        ).pack(pady=10)
 
-        hour_var = tk.StringVar()
-        hour_entry = ttk.Entry(self.rasvjeta_postavke, textvariable=hour_var)
-        hour_entry.pack(pady=5)
+        self.hour_var = tk.StringVar()
+        self.hour_entry = ttk.Entry(self.rasvjeta_postavke)
+        self.hour_entry.pack(pady=5)
 
         save_button = ttk.Button(
             self.rasvjeta_postavke,
@@ -248,9 +252,12 @@ class RasvjetaScreen(MainMenu):
     def spremanje_postavki_rasvjete(self):
 
         if self.sunset_var.get():
-            self.vrijeme_zalaska = self.zalazak_sunca()
+            self.rasvjeta_upaljena = self.sunset_var.get()
+            self.hour_var = "00:00 - 23:59"
+
         else:
-            self.hour = self.hour_var.get()
+            self.rasvjeta_upaljena = False
+            self.hour_var = self.hour_entry.get()
         self.rasvjeta_postavke.destroy()
 
     def zalazak_sunca(self):
@@ -262,7 +269,7 @@ class RasvjetaScreen(MainMenu):
 
 
 class TemperaturaScreen(MainMenu):
-    def __init__(self, root: tk.Tk, screen_size: str = "800x300") -> None:
+    def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
         super().__init__(root, screen_size)
         self.root = root
 
@@ -294,7 +301,7 @@ class TemperaturaScreen(MainMenu):
 
 
 class KameraScreen(MainMenu):
-    def __init__(self, root: tk.Tk, screen_size: str = "800x300") -> None:
+    def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
         super().__init__(root, screen_size)
         self.root = root
 
@@ -343,7 +350,7 @@ class KameraScreen(MainMenu):
 
 
 class DodatneMetrikeScreen(MainMenu):
-    def __init__(self, root: tk.Tk, screen_size: str = "800x300") -> None:
+    def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
         super().__init__(root, screen_size)
         self.root = root
         self.title = "Doodatne metrike - postavke"
@@ -393,18 +400,21 @@ class GlavniPrikazScreen(
     RasvjetaScreen, TemperaturaScreen, KameraScreen, DodatneMetrikeScreen, MainMenu
 ):
     def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
-
-        self.root = tk.Tk()
+        super().__init__(root, screen_size)
+        self.root = root
         self.title = "Glavni prikaz"
         self.root.geometry(screen_size)
 
         self.root.rowconfigure(0, weight=1)
         self.root.columnconfigure(0, weight=1)
         # -----------------------------
-        # RASVJETA LABEL TODO: DODAJ FUNKCIONALNOST
+        # RASVJETA LABEL #TODO: DODAJ FUNKCIONALNOST
         # -----------------------------
-        self.rasvjeta_label = tk.Label(self.root, foreground="black")
-        self.rasvjeta_label.place(relx=0.5, rely=0.1, anchor="center")
+
+        self.rasvjeta_label = tk.Label(
+            self.root, foreground="black", bg="black", width=10, height=5
+        )
+        self.rasvjeta_label.place(relx=0.05, rely=0.25)
 
         # -----------------------------
         # VIDEO FRAME PLACEHOLDER
@@ -452,7 +462,7 @@ class GlavniPrikazScreen(
         self.glavni_prikaz_label_temperatura.place(relx=0.975, rely=0.025, anchor="ne")
 
         # -----------------------------
-        # UNUTARNJA TEMPERATURA TODO: DODAJ FUNKCIONALNOST
+        # UNUTARNJA TEMPERATURA #TODO: DODAJ FUNKCIONALNOST
         # -----------------------------
         self.unutarnja_temperatura_label = ttk.Label(
             self.root,
@@ -464,7 +474,7 @@ class GlavniPrikazScreen(
         self.unutarnja_temperatura_label.place(relx=0.975, rely=0.075, anchor="ne")
 
         # -----------------------------
-        #  DODATNE METRIKE TODO: DODAJ FUNKCIONALNOST
+        #  DODATNE METRIKE #TODO: DODAJ FUNKCIONALNOST
         # -----------------------------
 
         if DodatneMetrike.vlaznost_var == True:
@@ -501,12 +511,14 @@ class GlavniPrikazScreen(
         self.root.after(1000, self.update_time_glavniPrikaz)
         self.root.after(1000, self.update_out_temp_glavniPrikaz)
 
+        self.root.after(1000, self.update_rasvjeta_label)
+
         # --------------------------
         # Update Raspberry data
         # --------------------------
-        self.root.after(1000, self.dohvati_unutarnju_temperaturu)
-        self.root.after(1000, self.dohvati_vlaznost)
-        self.root.after(1000, self.dohvati_tlak)
+        # self.root.after(1000, self.dohvati_unutarnju_temperaturu)
+        # self.root.after(1000, self.dohvati_vlaznost)
+        # self.root.after(1000, self.dohvati_tlak)
 
         # --------------------------
         # POVRATAK U MAIN SCREEN
@@ -522,6 +534,14 @@ class GlavniPrikazScreen(
     # Imamo ponavljanje koje moramo izbjeci
     # To mozemo uciniti dajuci funkciji 3 argumenta (root, label, funkcija(funkcija prima samu sebe kao argument))
     # ================================================
+    def update_rasvjeta_label(self):
+        if Rasvjeta.rasvjeta_upaljena == True or self.vrijeme_je_u_zadanom_opsegu(
+            Rasvjeta.hour_var
+        ):
+            self.rasvjeta_label.configure(bg="yellow")
+            self.root.after(5000, self.update_rasvjeta_label)
+        else:
+            self.rasvjeta_label.configure(bg="black")
 
     def update_time_glavniPrikaz(self):
         trenutno_vrijeme = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
