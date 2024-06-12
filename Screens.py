@@ -5,6 +5,7 @@ from tkinter import ttk
 from datetime import datetime
 from PIL import Image, ImageTk
 from sense_emu import SenseHat
+import time
 
 sense = SenseHat()
 # -----------------------------
@@ -21,6 +22,7 @@ KAMERA_PLACEHOLDER = "KAMERA"
 DODATNE_METRIKE_PLACEHOLDER = "DOD.\nMJER."
 GLAVNI_PRIKAZ_PLACEHOLDER = "GLAVNI\nPRIKAZ"
 LOKACIJA_PLACEHOLDER = "LOKACIJA"
+KALENDAR_PLACEHOLDER = "KALENDAR"
 
 ZELJENI_EVENT = "<Button-1>"
 
@@ -119,14 +121,22 @@ class MainMenu:
             width=BUTTON_WIDTH,
         )
 
+        # Kalendar button
+        self.button_kalendar = tk.Button(self.root, text=KALENDAR_PLACEHOLDER)
+        self.button_kalendar.place(
+            relx=0.35,
+            rely=0.375,
+            height=BUTTON_HEIGHT,
+            width=235,
+        )
+
         # TODO: Dodati click eventove za svaki button - svaki button vodi na novi screen, osim vlaznosti i tlaka, oni samo prikazuju vrijednosti
 
         # -----------------------------
         # UPDATE-AJ PODATKE
         # -----------------------------
-        if self.root.title == "SmartHome":
-            self.root.after(1000, self.update_time_mainMenu)
-            self.root.after(1000, self.update_out_temp_mainMenu)
+        self.root.after(1000, self.update_time_mainMenu)
+        self.root.after(1000, self.update_out_temp_mainMenu)
 
         # -----------------------------
         # EVENT BINDING
@@ -154,6 +164,11 @@ class MainMenu:
         self.button_glavni_prikaz.bind(
             ZELJENI_EVENT,
             self.button_glavni_prikaz_on_click,
+        )
+
+        self.button_kalendar.bind(
+            ZELJENI_EVENT,
+            self.button_kalendar_on_click,
         )
 
     # -----------------------------
@@ -201,6 +216,10 @@ class MainMenu:
         global DodatneMetrike
         DodatneMetrike = DodatneMetrikeScreen(self.root)
 
+    def button_kalendar_on_click(self, event):
+        global Kalendar
+        Kalendar = KalendarScreen(self.root)
+
     def button_glavni_prikaz_on_click(self, event):
         # self.root.destroy()
         global GlavniPrikaz
@@ -220,7 +239,6 @@ class RasvjetaScreen(MainMenu):
             x=200, y=50, width=300, height=200
         )  # Postavljanje okvira unutar glavnog prozora
 
-        # Checkbox za automatsko paljenje po zalasku sunca
         self.sunset_var = tk.BooleanVar()
 
         tk.Checkbutton(
@@ -280,7 +298,7 @@ class TemperaturaScreen(MainMenu):
         self.temperatura_postavke.place(x=200, y=50, width=300, height=200)
 
         # Oznaka i unos temperature
-        tk.Label(self.temperatura_postavke, text="Zeljena temperatura: ").pack(pady=10)
+        tk.Label(self.temperatura_postavke, text="Zeljena temperatura:").pack(pady=10)
 
         self.zeljena_temperatura = tk.StringVar()
         self.zeljena_temperatura_entry = ttk.Entry(
@@ -327,8 +345,10 @@ class KameraScreen(MainMenu):
         ).pack(pady=10)
 
         self.kamera_hour = tk.StringVar()
+
         self.kamera_hour_entry = ttk.Entry(
-            self.kamera_postavke, textvariable=self.kamera_hour
+            self.kamera_postavke,
+            textvariable=self.kamera_hour,
         )
         self.kamera_hour_entry.pack(pady=5)
 
@@ -396,6 +416,57 @@ class DodatneMetrikeScreen(MainMenu):
         self.dodatne_metrike_postavke.destroy()
 
 
+class KalendarScreen(MainMenu):
+    def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
+        super().__init__(root, screen_size)
+        self.root = root
+        self.title = "Kalendar - postavke"
+        self.root.geometry(screen_size)
+
+        self.kalendar_postavke = tk.Frame(self.root, borderwidth=2, relief="groove")
+
+        self.kalendar_postavke.place(
+            relx=0.315,
+            rely=0.2,
+            width=300,
+            height=200,
+        )  # Postavljanje okvira unutar glavnog prozora
+
+        tk.Label(self.kalendar_postavke, text="Napravi novi unos u kalendar").pack(
+            pady=10
+        )
+
+        # Inicijalizacija liste u koju cemo spremati aktivnosti za kalendar
+        self.kalendar_lista_aktivnosti = []
+        self.kalendar_entry = ttk.Entry(self.kalendar_postavke)
+        self.kalendar_entry.pack(pady=5)
+
+        kalendar_save_button = ttk.Button(
+            self.kalendar_postavke,
+            text="Spremi",
+            command=self.spremanje_postavki_kalendara,
+        )
+        kalendar_save_button.pack(pady=5)
+
+        kalendar_exit_button = ttk.Button(
+            self.kalendar_postavke,
+            text="Zatvori",
+            command=self.zatvori_postavke_kalendara,
+        )
+        kalendar_exit_button.pack(pady=5)
+
+        # -----------------------------
+        # FUNKCIJE KALENDAR
+        # -----------------------------
+
+    def spremanje_postavki_kalendara(self):
+        if self.kalendar_entry.get():
+            self.kalendar_lista_aktivnosti.append(self.kalendar_entry.get())
+
+    def zatvori_postavke_kalendara(self):
+        self.kalendar_postavke.destroy()
+
+
 class GlavniPrikazScreen(
     RasvjetaScreen, TemperaturaScreen, KameraScreen, DodatneMetrikeScreen, MainMenu
 ):
@@ -408,7 +479,7 @@ class GlavniPrikazScreen(
         self.root.rowconfigure(0, weight=1)
         self.root.columnconfigure(0, weight=1)
         # -----------------------------
-        # RASVJETA LABEL #TODO: DODAJ FUNKCIONALNOST
+        # RASVJETA LABEL
         # -----------------------------
 
         self.rasvjeta_label = tk.Label(
@@ -497,6 +568,18 @@ class GlavniPrikazScreen(
 
             self.glavni_prikaz_label_tlak.place(relx=0.975, rely=0.75, anchor="e")
 
+        # -----------------------------
+        #  KALENDAR #TODO: DODAJ FUNKCIONALNOST
+        # -----------------------------
+        if Kalendar.kalendar_lista_aktivnosti:
+            self.kalendar_label = ttk.Label(
+                self.root,
+                text="Ucitavanje kalendara",
+                font=FONT_STANDARD,
+                justify="center",
+            )
+            self.kalendar_label.place(relx=0.5, rely=0.975)
+
         # ----------------------------
         # VRATI SE U POSTAVKE - BUTTON
         # ----------------------------
@@ -508,10 +591,12 @@ class GlavniPrikazScreen(
         # --------------------------
         self.update_frame()
 
-        self.root.after(1000, self.update_time_glavniPrikaz)
-        self.root.after(1000, self.update_out_temp_glavniPrikaz)
+        self.root.after(5000, self.update_time_glavniPrikaz)
+        self.root.after(5500, self.update_out_temp_glavniPrikaz)
 
-        self.root.after(1000, self.update_rasvjeta_label)
+        self.root.after(6000, self.update_rasvjeta_label)
+
+        self.root.after(6500, self.update_kalendar_label)
 
         # --------------------------
         # Update Raspberry data
@@ -534,6 +619,12 @@ class GlavniPrikazScreen(
     # Imamo ponavljanje koje moramo izbjeci
     # To mozemo uciniti dajuci funkciji 3 argumenta (root, label, funkcija(funkcija prima samu sebe kao argument))
     # ================================================
+    def update_kalendar_label(self):
+        if Kalendar.kalendar_lista_aktivnosti:
+            for aktivnost in Kalendar.kalendar_lista_aktivnosti:
+                self.kalendar_label.configure(text=aktivnost)
+                self.root.after(3000, self.update_kalendar_label)
+
     def update_rasvjeta_label(self):
         if Rasvjeta.rasvjeta_upaljena == True or self.vrijeme_je_u_zadanom_opsegu(
             Rasvjeta.hour_var
@@ -578,7 +669,7 @@ class GlavniPrikazScreen(
             self.video_label.imgtk = self.imgtk
             self.video_label.configure(image=self.imgtk)
 
-        self.video_label.after(10, self.update_frame)
+        self.video_label.after(100, self.update_frame)
 
     # ------------------------------
     # SenseHat mjerenja
