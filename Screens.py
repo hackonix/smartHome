@@ -202,23 +202,23 @@ class MainMenu:
 
     def button_rasvjeta_on_click(self, event):
         global Rasvjeta
-        Rasvjeta = RasvjetaScreen(self.root)
+        Rasvjeta = RasvjetaScreen(self.root).startaj_frame_rasvjete()
 
     def button_temp_on_click(self, event):
         global Temperatura
-        Temperatura = TemperaturaScreen(self.root)
+        Temperatura = TemperaturaScreen(self.root).startaj_frame_temperature()
 
     def button_kamera_on_click(self, event):
         global Kamera
-        Kamera = KameraScreen(self.root)
+        Kamera = KameraScreen(self.root).startaj_frame_kamere()
 
     def button_dodatne_metrike_on_click(self, event):
         global DodatneMetrike
-        DodatneMetrike = DodatneMetrikeScreen(self.root)
+        DodatneMetrike = DodatneMetrikeScreen(self.root).startaj_dodatne_metrike_frame()
 
     def button_kalendar_on_click(self, event):
         global Kalendar
-        Kalendar = KalendarScreen(self.root)
+        Kalendar = KalendarScreen(self.root).startaj_kalendar_frame()
 
     def button_glavni_prikaz_on_click(self, event):
         # self.root.destroy()
@@ -230,6 +230,11 @@ class RasvjetaScreen(MainMenu):
     def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
         super().__init__(root, screen_size)
         self.root = root
+
+    def startaj_frame_rasvjete(self):
+        '''funkcija koja starta frame rasvjete. Nju poziva button click na MainMenu screen-u
+        '''
+
 
         self.title = "Postavke rasvjete"
 
@@ -263,9 +268,9 @@ class RasvjetaScreen(MainMenu):
         )
         save_button.pack(pady=20)
 
-        # -----------------------------
-        # FUNKCIJE SECOND SCREEN
-        # -----------------------------
+    # -----------------------------
+    # FUNKCIJE SECOND SCREEN
+    # -----------------------------
 
     def spremanje_postavki_rasvjete(self):
 
@@ -290,6 +295,11 @@ class TemperaturaScreen(MainMenu):
     def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
         super().__init__(root, screen_size)
         self.root = root
+
+    def startaj_frame_temperature(self):
+        '''funkcija koja starta frame temperature. Nju poziva button click na MainMenu screen-u
+        '''
+
 
         self.title = "Temperatura - Postavke"
 
@@ -322,6 +332,11 @@ class KameraScreen(MainMenu):
     def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
         super().__init__(root, screen_size)
         self.root = root
+
+    def startaj_frame_kamere(self):
+        '''funkcija koja starta frame kamere. Nju poziva button click na MainMenu screen-u
+        '''
+
 
         self.title = "Kamera - Postavke"
 
@@ -373,6 +388,9 @@ class DodatneMetrikeScreen(MainMenu):
     def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
         super().__init__(root, screen_size)
         self.root = root
+    def startaj_dodatne_metrike_frame(self):
+        '''funkcija koja starta frame dodatne metrike. Nju poziva button click na MainMenu screen-u
+        '''
         self.title = "Doodatne metrike - postavke"
 
         self.dodatne_metrike_postavke = tk.Frame(
@@ -420,8 +438,12 @@ class KalendarScreen(MainMenu):
     def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
         super().__init__(root, screen_size)
         self.root = root
-        self.title = "Kalendar - postavke"
         self.root.geometry(screen_size)
+    def startaj_kalendar_frame(self):
+        '''funkcija koja starta frame kalendara. Nju poziva button click na MainMenu screen-u
+        '''
+        self.title = "Kalendar - postavke"
+
 
         self.kalendar_postavke = tk.Frame(self.root, borderwidth=2, relief="groove")
 
@@ -468,7 +490,7 @@ class KalendarScreen(MainMenu):
 
 
 class GlavniPrikazScreen(
-    RasvjetaScreen, TemperaturaScreen, KameraScreen, DodatneMetrikeScreen, MainMenu
+    RasvjetaScreen, TemperaturaScreen, KameraScreen, DodatneMetrikeScreen,KalendarScreen, MainMenu
 ):
     def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
         super().__init__(root, screen_size)
