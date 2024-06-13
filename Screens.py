@@ -8,7 +8,7 @@ from PIL import Image, ImageTk
 from sense_emu import SenseHat
 
 
-sense = SenseHat()
+# sense = SenseHat()
 # -----------------------------
 # KONSTANTE
 # -----------------------------
@@ -251,7 +251,10 @@ class RasvjetaScreen(MainMenu):
         self.rasvjeta_postavke = tk.Frame(self.root, borderwidth=2, relief="groove")
 
         self.rasvjeta_postavke.place(
-            x=200, y=50, width=300, height=200
+            relx=0.315,
+            rely=0.2,
+            width=300,
+            height=200,
         )  # Postavljanje okvira unutar glavnog prozora
 
         self.sunset_var = tk.BooleanVar()
@@ -313,7 +316,10 @@ class TemperaturaScreen(MainMenu):
 
         self.temperatura_postavke = tk.Frame(self.root, borderwidth=2, relief="groove")
 
-        self.temperatura_postavke.place(x=200, y=50, width=300, height=200)
+        self.temperatura_postavke.place(relx=0.315,
+            rely=0.2,
+            width=300,
+            height=200,)
 
         # Oznaka i unos temperature
         tk.Label(self.temperatura_postavke, text="Zeljena temperatura:").pack(pady=10)
@@ -344,7 +350,10 @@ class KameraScreen(MainMenu):
         self.kamera_postavke = tk.Frame(self.root, borderwidth=2, relief="groove")
 
         self.kamera_postavke.place(
-            x=200, y=50, width=300, height=200
+            relx=0.315,
+            rely=0.2,
+            width=300,
+            height=200,
         )  # Postavljanje okvira unutar glavnog prozora
 
         # Checkbox za automatsko paljenje po zalasku sunca
@@ -402,7 +411,10 @@ class DodatneMetrikeScreen(MainMenu):
         )
 
         self.dodatne_metrike_postavke.place(
-            x=200, y=50, width=300, height=200
+            relx=0.315,
+            rely=0.2,
+            width=300,
+            height=200,
         )  # Postavljanje okvira unutar glavnog prozora
 
         # Checkbox za automatsko paljenje po zalasku sunca
@@ -486,6 +498,8 @@ class KalendarScreen(MainMenu):
     def spremanje_postavki_kalendara(self):
         if self.kalendar_entry.get():
             self.kalendar_lista_aktivnosti.append(self.kalendar_entry.get())
+            self.kalendar_entry.delete(0, tk.END)
+        
 
     def zatvori_postavke_kalendara(self):
         self.kalendar_postavke.destroy()
@@ -506,6 +520,7 @@ class GlavniPrikazScreen(
     ) -> None:
         super().__init__(root, screen_size)
         self.title = "Glavni prikaz"
+        self.root = root
 
         self.glavni_prikaz_frame = tk.Frame(self.root)
         self.glavni_prikaz_frame.pack(fill="both", expand=True)
@@ -622,9 +637,10 @@ class GlavniPrikazScreen(
         # VRATI SE U POSTAVKE - BUTTON
         # ----------------------------
         self.vrati_se_u_postavke_button = ttk.Button(
-            self.glavni_prikaz_frame, text="Postavke"
+            self.root, text="Postavke"
         )
         self.vrati_se_u_postavke_button.place(relx=0.025, rely=0.95, anchor="w")
+        
 
         # --------------------------
         # UPDATE-AJ PODATKE
@@ -766,7 +782,7 @@ class GlavniPrikazScreen(
     # Funkcija koja nas ponovo vraca na MainMenuScreen
     # -----------------------------
     def postavke_on_click(self, event):
-        self.root.destroy()
+        self.glavni_prikaz_frame.destroy()
         MainMenu(self.root)
 
     def __del__(self):
