@@ -673,9 +673,9 @@ class GlavniPrikazScreen(
         # --------------------------
         # Update Raspberry data
         # --------------------------
-        # self.root.after(1000, self.dohvati_unutarnju_temperaturu)
-        # self.root.after(1000, self.dohvati_vlaznost)
-        # self.root.after(1000, self.dohvati_tlak)
+        self.root.after(1000, self.dohvati_unutarnju_temperaturu)
+        self.root.after(1000, self.dohvati_vlaznost)
+        self.root.after(1000, self.dohvati_tlak)
 
         # --------------------------
         # POVRATAK U MAIN SCREEN
@@ -758,6 +758,14 @@ class GlavniPrikazScreen(
             text=f"Temperatura iznosi {temperatura:.2f} stupnjeva"
         )
         self.root.after(5000, self.dohvati_unutarnju_temperaturu)
+        if temperatura < self.temperatura_screen.zeljena_temperatura:
+            self.unutarnja_temperatura_label.config(text="Trenutno radi grijanje")
+        elif temperatura == self.temperatura_screen.zeljena_temperatura:
+            self.unutarnja_temperatura_label.config(text="Temp je jednaka unutarnjoj temp")
+        else:
+            self.unutarnja_temperatura_label.config(text="Trenutno radi hladenje")
+            
+
 
     # -----------------------------
     # Funkcija koja provjerava dal je Kamera.kamera_var == True ili trenutno vrijeme spada u Kamera.kamera_hour
