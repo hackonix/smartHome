@@ -506,7 +506,7 @@ class KalendarScreen(MainMenu):
 
 
 class GlavniPrikazScreen(
-    RasvjetaScreen, TemperaturaScreen, KameraScreen, DodatneMetrikeScreen, MainMenu
+    RasvjetaScreen, TemperaturaScreen, KameraScreen, DodatneMetrikeScreen, MainMenu, KalendarScreen
 ):
     def __init__(
         self,
@@ -521,6 +521,8 @@ class GlavniPrikazScreen(
         super().__init__(root, screen_size)
         self.title = "Glavni prikaz"
         self.root = root
+        self.glavni_prikaz_toplevel = tk.Toplevel(width=800, height=600)
+        
 
         self.glavni_prikaz_frame = tk.Frame(self.root)
         self.glavni_prikaz_frame.pack(fill="both", expand=True)
@@ -539,7 +541,7 @@ class GlavniPrikazScreen(
         # -----------------------------
 
         self.rasvjeta_label = tk.Label(
-            self.glavni_prikaz_frame, foreground="black", bg="black", width=10, height=5
+            self.glavni_prikaz_toplevel, foreground="black", bg="black", width=10, height=5
         )
         self.rasvjeta_label.place(relx=0.05, rely=0.25)
 
@@ -547,7 +549,7 @@ class GlavniPrikazScreen(
         # VIDEO FRAME PLACEHOLDER
         # -----------------------------
 
-        self.video_label = ttk.Label(self.glavni_prikaz_frame)
+        self.video_label = ttk.Label(self.glavni_prikaz_toplevel)
         self.video_label.place(
             relx=0.5,
             rely=0.5,
@@ -562,7 +564,7 @@ class GlavniPrikazScreen(
         # -----------------------------
 
         self.glavni_prikaz_label_datum_vrijeme = ttk.Label(
-            self.glavni_prikaz_frame,
+            self.glavni_prikaz_toplevel,
             text="Ucitavanje...",
             font=FONT_STANDARD,
             justify="center",
@@ -577,7 +579,7 @@ class GlavniPrikazScreen(
         # -----------------------------
 
         self.glavni_prikaz_label_temperatura = ttk.Label(
-            self.glavni_prikaz_frame,
+            self.glavni_prikaz_toplevel,
             text="Ucitavanje...",
             font=FONT_STANDARD,
             justify="center",
@@ -589,7 +591,7 @@ class GlavniPrikazScreen(
         # UNUTARNJA TEMPERATURA #TODO: DODAJ FUNKCIONALNOST
         # -----------------------------
         self.unutarnja_temperatura_label = ttk.Label(
-            self.glavni_prikaz_frame,
+            self.glavni_prikaz_toplevel,
             text="Ucitavanje...",
             font=FONT_STANDARD,
             justify="center",
@@ -603,7 +605,7 @@ class GlavniPrikazScreen(
 
         if self.dodatne_metrike_screen.vlaznost_var == True:
             self.glavni_prikaz_label_vlaznost = ttk.Label(
-                self.glavni_prikaz_frame,
+                self.glavni_prikaz_toplevel,
                 text="Ucitavanje...",
                 font=FONT_STANDARD,
                 justify="center",
@@ -613,7 +615,7 @@ class GlavniPrikazScreen(
 
         if self.dodatne_metrike_screen.tlak_var == True:
             self.glavni_prikaz_label_tlak = ttk.Label(
-                self.glavni_prikaz_frame,
+                self.glavni_prikaz_toplevel,
                 text="Ucitavanje...",
                 font=FONT_STANDARD,
                 justify="center",
@@ -626,7 +628,7 @@ class GlavniPrikazScreen(
         # -----------------------------
         if self.kalendar_screen.kalendar_lista_aktivnosti:
             self.kalendar_label = ttk.Label(
-                self.glavni_prikaz_frame,
+                self.glavni_prikaz_toplevel,
                 text="Ucitavanje kalendara",
                 font=FONT_STANDARD,
                 justify="center",
