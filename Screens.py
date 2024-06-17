@@ -3,6 +3,7 @@ import requests
 import cv2
 from typing import Optional
 from tkinter import ttk
+from tkinter import messagebox
 from datetime import datetime
 from PIL import Image, ImageTk
 from sense_emu import SenseHat
@@ -228,6 +229,17 @@ class MainMenu:
         self.kalendar_screen = KalendarScreen(self.root)
 
     def button_glavni_prikaz_on_click(self, event):
+
+        if (
+            self.rasvjeta_screen == None
+            or self.temperatura_screen == None
+            or self.kamera_screen == None
+            or self.dodatne_metrike_screen == None
+            or self.kalendar_screen == None
+        ):
+            messagebox.showerror(title="Error", message="Postavke nisu ispravne.")
+            return
+
         self.glavni_prikaz_screen = GlavniPrikazScreen(
             self.root,
             self.rasvjeta_screen,
@@ -245,8 +257,6 @@ class RasvjetaScreen(MainMenu):
         screen_size: str = "800x600",
     ) -> None:
         super().__init__(root, screen_size)
-
-        self.title = "Postavke rasvjete"
 
         self.rasvjeta_postavke = tk.Frame(self.root, borderwidth=2, relief="groove")
 
@@ -293,13 +303,6 @@ class RasvjetaScreen(MainMenu):
             self.hour_var = self.hour_entry.get()
         self.rasvjeta_postavke.destroy()
 
-    def zalazak_sunca(self):
-        response = requests.get(
-            f"https://hr.meteocast.net/sunrise-sunset/hr/zagreb/#google_vignette"
-        )
-
-        return response
-
 
 class TemperaturaScreen(MainMenu):
     def __init__(
@@ -308,8 +311,6 @@ class TemperaturaScreen(MainMenu):
         screen_size: str = "800x600",
     ) -> None:
         super().__init__(root, screen_size)
-
-        self.title = "Temperatura - Postavke"
 
         self.temperatura_postavke = tk.Frame(self.root, borderwidth=2, relief="groove")
 
@@ -338,8 +339,6 @@ class TemperaturaScreen(MainMenu):
 class KameraScreen(MainMenu):
     def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
         super().__init__(root, screen_size)
-
-        self.title = "Kamera - Postavke"
 
         self.kamera_postavke = tk.Frame(self.root, borderwidth=2, relief="groove")
 
@@ -393,8 +392,6 @@ class DodatneMetrikeScreen(MainMenu):
     def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
         super().__init__(root, screen_size)
 
-        self.title = "Doodatne metrike - postavke"
-
         self.dodatne_metrike_postavke = tk.Frame(
             self.root,
             borderwidth=2,
@@ -445,8 +442,6 @@ class KalendarScreen(MainMenu):
     def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
         super().__init__(root, screen_size)
 
-        self.title = "Kalendar - postavke"
-
         self.kalendar_postavke = tk.Frame(self.root, borderwidth=2, relief="groove")
 
         self.kalendar_postavke.place(
@@ -486,13 +481,19 @@ class KalendarScreen(MainMenu):
     def spremanje_postavki_kalendara(self):
         if self.kalendar_entry.get():
             self.kalendar_lista_aktivnosti.append(self.kalendar_entry.get())
+            self.kalendar_entry.delete(0, tk.END)
 
     def zatvori_postavke_kalendara(self):
         self.kalendar_postavke.destroy()
 
 
 class GlavniPrikazScreen(
-    RasvjetaScreen, TemperaturaScreen, KameraScreen, DodatneMetrikeScreen, MainMenu
+    RasvjetaScreen,
+    TemperaturaScreen,
+    KameraScreen,
+    DodatneMetrikeScreen,
+    KalendarScreen,
+    MainMenu,
 ):
     def __init__(
         self,
@@ -505,9 +506,8 @@ class GlavniPrikazScreen(
         screen_size: str = "800x600",
     ) -> None:
         super().__init__(root, screen_size)
-        self.title = "Glavni prikaz"
 
-        self.glavni_prikaz_frame = tk.Frame(self.root)
+        self.glavni_prikaz_frame = ttk.Frame(self.root)
         self.glavni_prikaz_frame.pack(fill="both", expand=True)
 
         self.rasvjeta_screen = rasvjeta_screen
