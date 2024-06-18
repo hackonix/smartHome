@@ -8,7 +8,7 @@ from PIL import Image, ImageTk
 from sense_emu import SenseHat
 import time
 
-sense = SenseHat()
+# sense = SenseHat()
 # -----------------------------
 # KONSTANTE
 # -----------------------------
@@ -36,6 +36,19 @@ class MainMenu:
 
         self.lokacija = "Zagreb"
 
+        # # -------------------------------
+        # # INICIJALIZACIJA OBJEKATA
+        # # -------------------------------
+        global Rasvjeta
+        Rasvjeta = RasvjetaScreen(self.root)
+        global Kamera
+        Kamera = KameraScreen(self.root)
+        global Temperatura
+        Temperatura = TemperaturaScreen(self.root)
+        global DodatneMetrike
+        DodatneMetrike = DodatneMetrikeScreen(self.root)
+        global Kalendar
+        Kalendar = KalendarScreen(self.root)
         # -----------------------------
         # PRIKAZ DATUMA
         # -----------------------------
@@ -172,12 +185,9 @@ class MainMenu:
             self.button_kalendar_on_click,
         )
 
-        # # -------------------------------
-        # # INICIJALIZACIJA OBJEKATA
-        # # -------------------------------
         # self.rasvjeta_screen: Optional[RasvjetaScreen] = None
         # self.temperatura_screen: Optional[TemperaturaScreen] = None
-        self.kamera_screen: Optional[RasvjetaScreen] = None
+        # self.kamera_screen: Optional[RasvjetaScreen] = None
         # self.dodatne_metrike_screen: Optional[DodatneMetrikeScreen] = None
         # self.kalendar_screen: Optional[KalendarScreen] = None
 
@@ -211,32 +221,27 @@ class MainMenu:
     # -----------------------------
 
     def button_rasvjeta_on_click(self, event):
-        global Rasvjeta
-        Rasvjeta = RasvjetaScreen(self.root).startaj_frame_rasvjete()
+        Rasvjeta.startaj_frame_rasvjete()
 
     def button_temp_on_click(self, event):
-        global Temperatura
-        Temperatura = TemperaturaScreen(self.root).startaj_frame_temperature()
+        Temperatura.startaj_frame_temperature()
 
     def button_kamera_on_click(self, event):
-        self.kamera_screen = KameraScreen(self.root).startaj_frame_kamere()
+        Kamera.startaj_frame_kamere()
 
     def button_dodatne_metrike_on_click(self, event):
-        global DodatneMetrike
-        DodatneMetrike = DodatneMetrikeScreen(self.root).startaj_dodatne_metrike_frame()
+        DodatneMetrike.startaj_dodatne_metrike_frame()
 
     def button_kalendar_on_click(self, event):
-        global Kalendar
-        Kalendar = KalendarScreen(self.root).startaj_kalendar_frame()
+        Kalendar.startaj_kalendar_frame()
 
     def button_glavni_prikaz_on_click(self, event):
         global GlavniPrikaz
-        GlavniPrikaz = GlavniPrikazScreen(self.root, kamera_screen=self.kamera_screen)
+        GlavniPrikaz = GlavniPrikazScreen(self.root)
 
 
 class RasvjetaScreen(MainMenu):
-    def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
-        super().__init__(root, screen_size)
+    def __init__(self, root: tk.Tk) -> None:
         self.root = root
 
         self.sunset_var = tk.BooleanVar()
@@ -303,7 +308,6 @@ class RasvjetaScreen(MainMenu):
 
 class TemperaturaScreen(MainMenu):
     def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
-        super().__init__(root, screen_size)
         self.root = root
         self.zeljena_temperatura = tk.StringVar()
 
@@ -343,7 +347,6 @@ class TemperaturaScreen(MainMenu):
 
 class KameraScreen(MainMenu):
     def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
-        super().__init__(root, screen_size)
         self.root = root
 
         self.kamera_var = tk.BooleanVar()
@@ -397,8 +400,7 @@ class KameraScreen(MainMenu):
 
 
 class DodatneMetrikeScreen(MainMenu):
-    def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
-        super().__init__(root, screen_size)
+    def __init__(self, root: tk.Tk) -> None:
         self.root = root
 
         self.vlaznost_var = tk.BooleanVar()
@@ -450,10 +452,8 @@ class DodatneMetrikeScreen(MainMenu):
 
 
 class KalendarScreen(MainMenu):
-    def __init__(self, root: tk.Tk, screen_size: str = "800x600") -> None:
-        super().__init__(root, screen_size)
+    def __init__(self, root: tk.Tk) -> None:
         self.root = root
-        self.root.geometry(screen_size)
 
         self.kalendar_lista_aktivnosti = []
 
@@ -504,25 +504,10 @@ class KalendarScreen(MainMenu):
         self.kalendar_postavke.destroy()
 
 
-class GlavniPrikazScreen(
-    RasvjetaScreen,
-    TemperaturaScreen,
-    KameraScreen,
-    DodatneMetrikeScreen,
-    KalendarScreen,
-    MainMenu,
-):
-    def __init__(
-        self, root: tk.Tk, kamera_screen, screen_size: str = "800x600"
-    ) -> None:
-
-        super().__init__(root, screen_size)
-
-        self.kamera_screen = kamera_screen
-
+class GlavniPrikazScreen():
+    def __init__(self, root: tk.Tk) -> None:
         self.root = root
         self.title = "Glavni prikaz"
-        self.root.geometry(screen_size)
 
         self.glavni_prikaz_frame = tk.Frame(self.root)
         self.glavni_prikaz_frame.pack(fill="both", expand=True)
@@ -637,8 +622,8 @@ class GlavniPrikazScreen(
         # UPDATE-AJ NOVE PODATKE
         # --------------------------
         try:
-            if self.kamera_screen.kamera_var or self.vrijeme_je_u_zadanom_opsegu(
-                self.kamera_screen.kamera_hour
+            if Kamera.kamera_var or self.vrijeme_je_u_zadanom_opsegu(
+                Kamera.kamera_hour
             ):
                 self.update_frame()
             else:
