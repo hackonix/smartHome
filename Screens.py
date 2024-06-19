@@ -8,7 +8,7 @@ from PIL import Image, ImageTk
 from sense_emu import SenseHat
 import time
 
-# sense = SenseHat()
+sense = SenseHat()
 # -----------------------------
 # KONSTANTE
 # -----------------------------
@@ -36,19 +36,14 @@ class MainMenu:
 
         self.lokacija = "Zagreb"
 
-        # # -------------------------------
-        # # INICIJALIZACIJA OBJEKATA
-        # # -------------------------------
-        global Rasvjeta
-        Rasvjeta = RasvjetaScreen(self.root)
-        global Kamera
-        Kamera = KameraScreen(self.root)
-        global Temperatura
-        Temperatura = TemperaturaScreen(self.root)
-        global DodatneMetrike
-        DodatneMetrike = DodatneMetrikeScreen(self.root)
-        global Kalendar
-        Kalendar = KalendarScreen(self.root)
+        # -------------------------------
+        # INICIJALIZACIJA OBJEKATA
+        # -------------------------------
+        self.rasvjeta_screen = RasvjetaScreen(self.root)
+        self.kamera_screen = KameraScreen(self.root)
+        self.temperatura_screen = TemperaturaScreen(self.root)
+        self.dodatne_metrike_screen = DodatneMetrikeScreen(self.root)
+        self.kalendar_screen = KalendarScreen(self.root)
         # -----------------------------
         # PRIKAZ DATUMA
         # -----------------------------
@@ -210,7 +205,7 @@ class MainMenu:
             temperature = data["main"]["temp"]
             lokacija_display = self.lokacija
             self.label_vanjska_temp.configure(
-                text=f"Temperatura u mjestu {lokacija_display}: {temperature}°C"
+                text=f"Temperatura u mjestu {lokacija_display}: {temperature}ï¿½C"
             )
         except requests.exceptions.RequestException as e:
             self.label_vanjska_temp.configure(text=f"Greska: {e}")
@@ -221,23 +216,29 @@ class MainMenu:
     # -----------------------------
 
     def button_rasvjeta_on_click(self, event):
-        Rasvjeta.startaj_frame_rasvjete()
+        self.rasvjeta_screen.startaj_frame_rasvjete()
 
     def button_temp_on_click(self, event):
-        Temperatura.startaj_frame_temperature()
+        self.temperatura_screen.startaj_frame_temperature()
 
     def button_kamera_on_click(self, event):
-        Kamera.startaj_frame_kamere()
+        self.kamera_screen.startaj_frame_kamere()
 
     def button_dodatne_metrike_on_click(self, event):
-        DodatneMetrike.startaj_dodatne_metrike_frame()
+        self.dodatne_metrike_screen.startaj_dodatne_metrike_frame()
 
     def button_kalendar_on_click(self, event):
-        Kalendar.startaj_kalendar_frame()
+        self.kalendar_screen.startaj_kalendar_frame()
 
     def button_glavni_prikaz_on_click(self, event):
-        global GlavniPrikaz
-        GlavniPrikaz = GlavniPrikazScreen(self.root)
+        self.glavni_prikaz_screen = GlavniPrikazScreen(
+            self.root,
+            self.rasvjeta_screen,
+            self.temperatura_screen,
+            self.kamera_screen,
+            self.dodatne_metrike_screen,
+            self.kalendar_screen,
+        )
 
 
 class RasvjetaScreen(MainMenu):
@@ -268,7 +269,7 @@ class RasvjetaScreen(MainMenu):
             variable=self.sunset_var,
         ).pack(pady=10)
 
-        # Oznaka i unos za sat kad će se svjetlo upaliti
+        # Oznaka i unos za sat kad ?e se svjetlo upaliti
         tk.Label(
             self.rasvjeta_postavke, text="Upali/iskljuci svjetlo u (HH:MM) - (HH:MM):"
         ).pack(pady=10)
@@ -371,7 +372,7 @@ class KameraScreen(MainMenu):
             variable=self.kamera_var,
         ).pack(pady=10)
 
-        # Oznaka i unos za sat kad će se svjetlo upaliti
+        # Oznaka i unos za sat kad ?e se svjetlo upaliti
         tk.Label(
             self.kamera_postavke, text="Upali/iskljuci kameru u (HH:MM) - (HH:MM):"
         ).pack(pady=10)
@@ -403,9 +404,6 @@ class DodatneMetrikeScreen(MainMenu):
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
 
-        self.vlaznost_var = tk.BooleanVar()
-        self.tlak_var = tk.BooleanVar()
-
     def startaj_dodatne_metrike_frame(self):
         """funkcija koja starta frame dodatne metrike. Nju poziva button click na MainMenu screen-u"""
         self.title = "Doodatne metrike - postavke"
@@ -421,6 +419,9 @@ class DodatneMetrikeScreen(MainMenu):
             height=500,
             width=500,
         )  # Postavljanje okvira unutar glavnog prozora
+
+        self.vlaznost_var = tk.BooleanVar()
+        self.tlak_var = tk.BooleanVar()
 
         tk.Checkbutton(
             self.dodatne_metrike_postavke,
@@ -499,13 +500,22 @@ class KalendarScreen(MainMenu):
     def spremanje_postavki_kalendara(self):
         if self.kalendar_entry.get():
             self.kalendar_lista_aktivnosti.append(self.kalendar_entry.get())
+            self.kalendar_entry.delete(0, tk.END)
 
     def zatvori_postavke_kalendara(self):
         self.kalendar_postavke.destroy()
 
 
-class GlavniPrikazScreen():
-    def __init__(self, root: tk.Tk) -> None:
+class GlavniPrikazScreen:
+    def __init__(
+        self,
+        root: tk.Tk,
+        rasvjeta_screen,
+        temperatura_screen,
+        kamera_screen,
+        dodatne_metrike_screen,
+        kalendar_screen,
+    ) -> None:
         self.root = root
         self.title = "Glavni prikaz"
 
@@ -514,6 +524,12 @@ class GlavniPrikazScreen():
 
         self.root.rowconfigure(0, weight=1)
         self.root.columnconfigure(0, weight=1)
+
+        self.rasvjeta_screen = rasvjeta_screen
+        self.temperatura_sreen = temperatura_screen
+        self.kamera_screen = kamera_screen
+        self.dodatne_metrike_screen = dodatne_metrike_screen
+        self.kalendar_screen = kalendar_screen
 
         self.error_list = []
         # -----------------------------
@@ -622,8 +638,8 @@ class GlavniPrikazScreen():
         # UPDATE-AJ NOVE PODATKE
         # --------------------------
         try:
-            if Kamera.kamera_var or self.vrijeme_je_u_zadanom_opsegu(
-                Kamera.kamera_hour
+            if self.kamera_screen.kamera_var or self.vrijeme_je_u_zadanom_opsegu(
+                self.kamera_screen.kamera_hour
             ):
                 self.update_frame()
             else:
@@ -633,7 +649,7 @@ class GlavniPrikazScreen():
             self.glavni_prikaz_frame.after(5500, self.update_out_temp_glavniPrikaz)
             self.glavni_prikaz_frame.after(6000, self.update_rasvjeta_label)
 
-            if Kalendar.kalendar_lista_aktivnosti:
+            if self.kalendar_screen.kalendar_lista_aktivnosti:
                 self.glavni_prikaz_frame.after(6500, self.update_kalendar_label)
 
             # --------------------------
@@ -655,14 +671,15 @@ class GlavniPrikazScreen():
     # FUNKCIJE
     # -----------------------------
     def update_kalendar_label(self):
-        if Kalendar.kalendar_lista_aktivnosti:
-            for aktivnost in Kalendar.kalendar_lista_aktivnosti:
+        if self.kalendar_screen.kalendar_lista_aktivnosti:
+            for aktivnost in self.kalendar_screen.kalendar_lista_aktivnosti:
                 self.kalendar_label.configure(text=aktivnost)
                 self.glavni_prikaz_frame.after(3000, self.update_kalendar_label)
 
     def update_rasvjeta_label(self):
-        if Rasvjeta.rasvjeta_upaljena == True or self.vrijeme_je_u_zadanom_opsegu(
-            Rasvjeta.hour_var
+        if (
+            self.rasvjeta_screen.rasvjeta_upaljena == True
+            or self.vrijeme_je_u_zadanom_opsegu(self.rasvjeta_screen.hour_var)
         ):
             self.rasvjeta_label.configure(bg="yellow")
             self.glavni_prikaz_frame.after(5000, self.update_rasvjeta_label)
@@ -684,7 +701,7 @@ class GlavniPrikazScreen():
             temperature = data["main"]["temp"]
             lokacija_display = grad
             self.glavni_prikaz_label_temperatura.configure(
-                text=f"Temperatura u mjestu {lokacija_display}: {temperature}°C"
+                text=f"Temperatura u mjestu {lokacija_display} iznosi {temperature} stupnjeva"
             )
         except requests.exceptions.RequestException as e:
             self.glavni_prikaz_label_temperatura.configure(text=f"Greska: {e}")
